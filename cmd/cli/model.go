@@ -3,13 +3,10 @@ package main
 import (
 	"time"
 
+	prayertime "prayer-time-cli/internal/prayertime"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-type PrayerTime struct {
-	Name string
-	Time string
-}
 
 type WeeklyPrayerData struct {
 	Day   string
@@ -19,7 +16,7 @@ type WeeklyPrayerData struct {
 type model struct {
 	currentTime      time.Time
 	isQuitting       bool
-	dailyPrayerTimes []PrayerTime
+	dailyPrayerTimes []prayertime.PrayerTime
 	weeklyPrayerData []WeeklyPrayerData
 	width            int
 	height           int

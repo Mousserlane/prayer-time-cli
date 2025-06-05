@@ -20,11 +20,19 @@ import (
 // }
 
 var (
-	digitColor          = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58"))
-	dateStyle           = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58")).Bold(true).Padding(0, 2)
-	mainContainerStyle  = lipgloss.NewStyle().Width(80)
-	dateContainerStyle  = lipgloss.NewStyle().Width(80).Align(lipgloss.Center)
-	clockContainerStyle = lipgloss.NewStyle().Width(80).Align(lipgloss.Center).MarginTop(2).MarginBottom(2)
+	digitColor                    = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58"))
+	dateStyle                     = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58")).Bold(true).Padding(0, 2)
+	mainContainerStyle            = lipgloss.NewStyle().Width(80)
+	dateContainerStyle            = lipgloss.NewStyle().Width(80).Align(lipgloss.Center)
+	clockContainerStyle           = lipgloss.NewStyle().Width(80).Align(lipgloss.Center).Margin(2, 0)
+	todayPrayerTimeContainerStyle = lipgloss.NewStyle().Width(80).Align(lipgloss.Center)
+	prayerTimeBoxStyle            = lipgloss.NewStyle().
+					Foreground(lipgloss.Color("#444444")).
+					Background(lipgloss.Color("#FFFFFF")).
+					Padding(0, 1).
+					Border(lipgloss.RoundedBorder()).
+					BorderForeground(lipgloss.Color("#BDFE58")).
+					Align(lipgloss.Center)
 )
 
 func (m model) View() string {
@@ -66,8 +74,15 @@ func (m model) View() string {
 		)
 	}
 
-	hijriDate := prayertime.DateNowToHijri()
+	todayString := fmt.Sprintf("%d-%d-%d", m.currentTime.Day, m.currentTime.Month, m.currentTime.Year)
+	prayerTimeResp, err := prayertime.GetTodayPrayerTime(todayString, "jakarta", "ID", 10)
+	if err != nil {
+		fmt.Errorf("Unable to get response from API: %v", err)
+	}
+
 	renderedClock := strings.Join(outputLines, "\n")
+	renderedPrayerTimes := renderTodayPrayerTimes(prayerTimeResp)
+	hijriDate := prayertime.DateNowToHijri(m.currentTime)
 
 	const assumeWidth = 120
 
@@ -75,5 +90,17 @@ func (m model) View() string {
 
 	sections = append(sections, clockContainerStyle.Render(renderedClock))
 	sections = append(sections, dateContainerStyle.Render(dateStyle.Render(hijriDate)))
+	sections = append(sections, todayPrayerTimeContainerStyle.Render())
+	sections = append(sections, todayPrayerTimeContainerStyle.Render(renderedPrayerTimes))
 	return lipgloss.JoinVertical(lipgloss.Left, sections...)
+}
+
+func renderTodayPrayerTimes(times []prayertime.PrayerTime) string {
+	var boxes []string
+	for _, p := range times {
+		content := fmt.Sprintf("%s\n%s", p.Name, p.Time)
+		boxes = append(boxes, prayerTimeBoxStyle.Render(content))
+	}
+
+	return lipgloss.JoinHorizontal(lipgloss.Center, boxes...)
 }

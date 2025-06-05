@@ -30,9 +30,7 @@ func getMonthName(monthInt int) string {
 	return "Invalid Month"
 }
 
-func DateNowToHijri() string {
-	currentTime := time.Now()
-
+func DateNowToHijri(currentTime time.Time) string {
 	year := currentTime.Year()
 	month := currentTime.Month()
 	day := currentTime.Day()
