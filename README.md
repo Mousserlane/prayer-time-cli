@@ -10,5 +10,6 @@ This is still a work in progress. The core itself i.e. the prayer time is not ad
 - [x] Add Current Time
 - [x] Add day month year in hijri
 - [ ] Add Gregorian Calendar
-- [ ] Add Prayer times for the date
+- [x] Add Prayer times for the date
 - [ ] Add Month/Weekly prayer time
+- [ ] Add Highlight for nearest prayer time
