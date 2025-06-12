@@ -4,10 +4,10 @@
 A simple prayer time program... In your CLI!
 I made this to try out golang & BubbleTea. And because I want a running clock in my terminal workflow.
 
-<img width="731" alt="Screenshot 2025-06-05 at 23 24 41" src="https://github.com/user-attachments/assets/8ba4aee0-846d-4322-a954-939c0fa3a715" />
+<img width="429" alt="Screenshot 2025-06-12 at 09 38 27" src="https://github.com/user-attachments/assets/b1d967f9-81cb-424e-9e7d-60fdf10d1b3f" />
 
 
-This is still a work in progress. The core itself i.e. the prayer time is not added yet.
+This is still a work in progress.
 
 ## Progress Tracker
 
@@ -16,4 +16,6 @@ This is still a work in progress. The core itself i.e. the prayer time is not ad
 - [ ] Add Gregorian Calendar
 - [x] Add Prayer times for the date
 - [ ] Add Month/Weekly prayer time
-- [ ] Add Highlight for nearest prayer time
+- [x] Add Highlight for nearest prayer time
+- [ ] Add location and prayer time calculation method selection (At the moment it's hardcoded to Jakarta using ID's ministry of religious affair calculation method)
+
