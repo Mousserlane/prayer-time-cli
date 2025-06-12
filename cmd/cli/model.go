@@ -80,7 +80,7 @@ func (m model) fetchDailyPrayerTimes() tea.Cmd {
 	return func() tea.Msg {
 		todayString := fmt.Sprintf("%d-%d-%d", m.currentTime.Day, m.currentTime.Month, m.currentTime.Year)
 
-		prayerTimeResp, err := prayertime.GetTodayPrayerTime(todayString, "jakarta", "ID", 10)
+		prayerTimeResp, err := prayertime.GetTodayPrayerTime(todayString, "jakarta", "ID", 20)
 		if err != nil {
 			fmt.Errorf("Unable to get response from API: %v", err)
 			return fetchDailyPrayerErr{Err: err}
