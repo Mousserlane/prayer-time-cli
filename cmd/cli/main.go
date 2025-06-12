@@ -14,7 +14,7 @@ func tickCmd() tea.Cmd {
 }
 
 func main() {
-	p := tea.NewProgram(model{
+	p := tea.NewProgram(&model{
 		currentTime: time.Now(),
 	})
 

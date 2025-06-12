@@ -3,14 +3,17 @@ package prayertime
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
 
 type PrayerTime struct {
-	Name string
-	Time string
+	Name      string
+	Time      string
+	Err       error
+	IsLoading bool
+	IsNearest bool
 }
 
 type AladhanResponse struct {
@@ -44,11 +47,11 @@ func GetTodayPrayerTime(today string, city string, country string, method int) (
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(response.Body)
+		bodyBytes, _ := io.ReadAll(response.Body)
 		return nil, fmt.Errorf("API return non 200 status %s: %s", response.Status, string(bodyBytes))
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read API response body: %w", err)
 	}
@@ -65,11 +68,11 @@ func GetTodayPrayerTime(today string, city string, country string, method int) (
 	}
 
 	dailyPrayerTimes := []PrayerTime{
-		{Name: "Fajr", Time: aladhanResponse.Data.Timings.Fajr},
-		{Name: "Dhuhr", Time: aladhanResponse.Data.Timings.Dhuhr},
-		{Name: "Asr", Time: aladhanResponse.Data.Timings.Asr},
-		{Name: "Maghrib", Time: aladhanResponse.Data.Timings.Maghrib},
-		{Name: "Isha", Time: aladhanResponse.Data.Timings.Isha},
+		{Name: "Fajr", Time: aladhanResponse.Data.Timings.Fajr, IsNearest: false},
+		{Name: "Dhuhr", Time: aladhanResponse.Data.Timings.Dhuhr, IsNearest: false},
+		{Name: "Asr", Time: aladhanResponse.Data.Timings.Asr, IsNearest: false},
+		{Name: "Maghrib", Time: aladhanResponse.Data.Timings.Maghrib, IsNearest: false},
+		{Name: "Isha", Time: aladhanResponse.Data.Timings.Isha, IsNearest: false},
 	}
 
 	return dailyPrayerTimes, nil
