@@ -52,8 +52,14 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
+
 	case tickMsg:
 		m.currentTime = time.Now()
+		highlightChanged := m.updateUpcomingPrayerTime()
+		if highlightChanged {
+			return m, tickCmd()
+		}
+
 		return m, tickCmd()
 
 	case tea.WindowSizeMsg:
@@ -66,6 +72,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.dailyPrayerTimes = msg.Prayers
 		m.updateUpcomingPrayerTime()
 		return m, nil
+
 	case fetchDailyPrayerErr:
 		m.isLoadingPrayer = false
 		m.Error = msg.Err
@@ -90,9 +97,9 @@ func (m model) fetchDailyPrayerTimes() tea.Cmd {
 	}
 }
 
-func (m *model) updateUpcomingPrayerTime() {
+func (m *model) updateUpcomingPrayerTime() bool {
 	if len(m.dailyPrayerTimes) == 0 {
-		return
+		return false
 	}
 
 	now := m.currentTime
@@ -102,6 +109,7 @@ func (m *model) updateUpcomingPrayerTime() {
 	lastPassedIndex := -1
 	maxPassedDuration := -time.Hour * 24 * 365
 
+	oldNearestIndex := -1
 	for i := range m.dailyPrayerTimes {
 		m.dailyPrayerTimes[i].IsNearest = false
 	}
@@ -112,6 +120,7 @@ func (m *model) updateUpcomingPrayerTime() {
 			log.Printf("Error parsing prayer time %s: %v ", pt.Name, err)
 			continue
 		}
+
 		prayerTimeToday := time.Date(now.Year(), now.Month(), now.Day(), parsedTime.Hour(), parsedTime.Minute(), 0, 0, now.Location())
 
 		diff := prayerTimeToday.Sub(now)
@@ -128,11 +137,18 @@ func (m *model) updateUpcomingPrayerTime() {
 		}
 	}
 
+	newNearestIndex := -1
 	if nearestIndex != -1 {
-		m.dailyPrayerTimes[nearestIndex].IsNearest = true
+		newNearestIndex = nearestIndex
 	} else if lastPassedIndex != -1 {
 		// TODO : If all prayer time has passed, should it highlight the last prayer time or
 		// the first?? for now, it's highlighting the last prayer time
-		m.dailyPrayerTimes[lastPassedIndex].IsNearest = true
+		newNearestIndex = lastPassedIndex
 	}
+
+	if newNearestIndex != -1 {
+		m.dailyPrayerTimes[newNearestIndex].IsNearest = true
+	}
+
+	return newNearestIndex != oldNearestIndex
 }
