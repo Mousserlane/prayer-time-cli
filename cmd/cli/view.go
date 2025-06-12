@@ -27,7 +27,6 @@ var (
 				Inherit(prayerTimeBoxStyle).
 				Foreground(lipgloss.Color("#FFA500")).
 				BorderForeground(lipgloss.Color("#FFA500")).
-				Padding(0).
 				Width(8)
 )
 
