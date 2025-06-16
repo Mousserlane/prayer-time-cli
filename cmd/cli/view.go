@@ -12,10 +12,9 @@ import (
 var (
 	digitColor                    = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58"))
 	dateStyle                     = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58")).Bold(true).Padding(0, 2)
-	mainContainerStyle            = lipgloss.NewStyle().Width(80)
-	dateContainerStyle            = lipgloss.NewStyle().Width(80).Align(lipgloss.Center)
-	clockContainerStyle           = lipgloss.NewStyle().Width(80).Align(lipgloss.Center).Margin(2, 0)
-	todayPrayerTimeContainerStyle = lipgloss.NewStyle().Width(80).Align(lipgloss.Center)
+	dateContainerStyle            = lipgloss.NewStyle().Align(lipgloss.Center)
+	clockContainerStyle           = lipgloss.NewStyle().Align(lipgloss.Center).Margin(2, 0)
+	todayPrayerTimeContainerStyle = lipgloss.NewStyle().Align(lipgloss.Center)
 	prayerTimeBoxStyle            = lipgloss.NewStyle().
 					Foreground(lipgloss.Color("#BDFE58")).
 					Bold(true).
@@ -73,16 +72,13 @@ func (m model) View() string {
 	renderedPrayerTimes := renderTodayPrayerTimes(m.dailyPrayerTimes)
 	hijriDate := prayertime.DateNowToHijri(m.currentTime)
 
-	const assumeWidth = 120
-
 	var sections []string
 
-	sections = append(sections, clockContainerStyle.Render(renderedClock))
-	sections = append(sections, dateContainerStyle.Render(dateStyle.Render(hijriDate)))
-	sections = append(sections, todayPrayerTimeContainerStyle.Render())
+	sections = append(sections, clockContainerStyle.Width(m.width).Render(renderedClock))
+	sections = append(sections, dateContainerStyle.Width(m.width).Render(dateStyle.Render(hijriDate)))
 	sections = append(sections, todayPrayerTimeContainerStyle.Render(renderedPrayerTimes))
 
-	return lipgloss.JoinVertical(lipgloss.Left, sections...)
+	return lipgloss.JoinVertical(lipgloss.Center, sections...)
 }
 
 func renderTodayPrayerTimes(times []prayertime.PrayerTime) string {
