@@ -13,7 +13,7 @@ This is still a work in progress.
 
 - [x] Add Current Time
 - [x] Add day month year in hijri
-- [ ] Add Gregorian Calendar
+- [x] Add Gregorian Date
 - [x] Add Prayer times for the date
 - [ ] Add Month/Weekly prayer time
 - [x] Add Highlight for nearest prayer time
