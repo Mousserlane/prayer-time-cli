@@ -4,7 +4,7 @@
 A simple prayer time program... In your CLI!
 I made this to try out golang & BubbleTea. And because I want a running clock in my terminal workflow.
 
-<img width="429" alt="Screenshot 2025-06-12 at 09 38 27" src="https://github.com/user-attachments/assets/b1d967f9-81cb-424e-9e7d-60fdf10d1b3f" />
+<img width="724" alt="Screenshot 2025-06-17 at 17 45 07" src="https://github.com/user-attachments/assets/1832899c-2c04-4c9d-90e5-e50888e328ec" />
 
 
 This is still a work in progress.
