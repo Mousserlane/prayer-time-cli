@@ -71,11 +71,12 @@ func (m model) View() string {
 	renderedClock := strings.Join(outputLines, "\n")
 	renderedPrayerTimes := renderTodayPrayerTimes(m.dailyPrayerTimes)
 	hijriDate := prayertime.DateNowToHijri(m.currentTime)
+	combinedDate := fmt.Sprintf("%s / %s", m.currentTime.UTC().Format("2 January 2006"), hijriDate)
 
 	var sections []string
 
 	sections = append(sections, clockContainerStyle.Width(m.width).Render(renderedClock))
-	sections = append(sections, dateContainerStyle.Width(m.width).Render(dateStyle.Render(hijriDate)))
+	sections = append(sections, dateContainerStyle.Width(m.width).Render(dateStyle.Render(combinedDate)))
 	sections = append(sections, todayPrayerTimeContainerStyle.Render(renderedPrayerTimes))
 
 	return lipgloss.JoinVertical(lipgloss.Center, sections...)
