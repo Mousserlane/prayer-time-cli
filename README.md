@@ -2,7 +2,7 @@
 # Prayer Time CLI (WIP)
 
 A simple prayer time program... In your CLI!
-I made this to try out golang & BubbleTea. And because I want a running clock in my terminal workflow.
+I made this to try out golang & BubbleTea. And because I want a running clock & a prayer time reminder in my terminal workflow.
 
 <img width="724" alt="Screenshot 2025-06-17 at 17 45 07" src="https://github.com/user-attachments/assets/1832899c-2c04-4c9d-90e5-e50888e328ec" />
 
