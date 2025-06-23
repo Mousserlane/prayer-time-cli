@@ -47,7 +47,6 @@ func (m model) Init() tea.Cmd {
 		tea.EnterAltScreen,
 		tickCmd(),
 		m.loadSchedules(),
-		// m.fetchDailyPrayerTimes(),
 	)
 }
 
