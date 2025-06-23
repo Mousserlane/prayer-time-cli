@@ -4,6 +4,9 @@ MAIN_PACKAGE = ./cmd/cli
 GO_BUILD_FLAGS = 
 INSTALL_DIR = /usr/local/bin
 
+debug:
+	cd ${MAIN_PACKAGE} && go run .
+
 build:
 	@echo "Compiling ${BINARY_NAME}..."
 	go build ${GO_BUILD_FLAGS} -o ${BINARY_NAME} ${MAIN_PACKAGE}
