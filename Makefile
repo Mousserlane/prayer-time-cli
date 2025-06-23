@@ -1,5 +1,7 @@
 BINARY_NAME = prayer-time-cli
 
+VERSION := 0.6.8
+
 MAIN_PACKAGE = ./cmd/cli
 GO_BUILD_FLAGS = 
 INSTALL_DIR = /usr/local/bin
