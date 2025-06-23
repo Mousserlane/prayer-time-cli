@@ -9,6 +9,10 @@ I made this to try out golang & BubbleTea. And because I want a running clock & 
 
 This is still a work in progress.
 
+## Installation and Running the App
+Run `make install` to install the app.
+To execute the app, simply run `prayer-time-cli` 
+
 ## Progress Tracker
 
 - [x] Add Current Time
@@ -18,4 +22,6 @@ This is still a work in progress.
 - [ ] Add Month/Weekly prayer time
 - [x] Add Highlight for nearest prayer time
 - [ ] Add location and prayer time calculation method selection (At the moment it's hardcoded to Jakarta using ID's ministry of religious affair calculation method)
-
+- [ ] Init config prompt i.e. select location or timezone, add lat/long for better precision, and pick calculation method
+- [ ] Save config
+- [ ] Fallback values for empty config item e.g. maps predefined lat/long to a timezone if users omit the lat long config.  
