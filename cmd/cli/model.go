@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 
 	prayertime "prayer-time-cli/internal/prayertime"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/hablullah/go-prayer"
 )
 
-type WeeklyPrayerData struct {
+type MonthlyPrayerData struct {
 	Day   string
 	Times []string
 }
@@ -19,19 +19,24 @@ type fetchDailyPrayerResp struct {
 	Prayers []prayertime.PrayerTime
 }
 
+type schedulesLoadedResp struct {
+	Schedules []prayer.Schedule
+}
+
 type fetchDailyPrayerErr struct {
 	Err error
 }
 
 type model struct {
-	currentTime      time.Time
-	isQuitting       bool
-	dailyPrayerTimes []prayertime.PrayerTime
-	weeklyPrayerData []WeeklyPrayerData
-	isLoadingPrayer  bool
-	Error            error
-	width            int
-	height           int
+	currentTime       time.Time
+	isQuitting        bool
+	dailyPrayerTimes  []prayertime.PrayerTime
+	monthlyPrayerData []prayertime.MonthlyPrayerTime
+	yearlySchedules   []prayer.Schedule
+	isLoadingPrayer   bool
+	Error             error
+	width             int
+	height            int
 }
 
 type tickMsg time.Time
@@ -41,7 +46,8 @@ func (m model) Init() tea.Cmd {
 	return tea.Batch(
 		tea.EnterAltScreen,
 		tickCmd(),
-		m.fetchDailyPrayerTimes(),
+		m.loadSchedules(),
+		// m.fetchDailyPrayerTimes(),
 	)
 }
 
@@ -67,6 +73,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		return m, nil
 
+	case schedulesLoadedResp:
+		m.yearlySchedules = msg.Schedules
+		return m, m.fetchDailyPrayerTimes()
+
 	case fetchDailyPrayerResp:
 		m.isLoadingPrayer = false
 		m.dailyPrayerTimes = msg.Prayers
@@ -82,16 +92,19 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m *model) loadSchedules() tea.Cmd {
+	return func() tea.Msg {
+		schedules := prayertime.LoadSchedules(m.currentTime.Year())
+		return schedulesLoadedResp{schedules}
+	}
+}
+
 // TODO : Add city, country, and method arguments
 func (m model) fetchDailyPrayerTimes() tea.Cmd {
 	return func() tea.Msg {
-		todayString := fmt.Sprintf("%d-%d-%d", m.currentTime.Day, m.currentTime.Month, m.currentTime.Year)
+		todayString := m.currentTime.Format("2006-01-02")
 
-		prayerTimeResp, err := prayertime.GetTodayPrayerTime(todayString, "jakarta", "ID", 20)
-		if err != nil {
-			fmt.Errorf("Unable to get response from API: %v", err)
-			return fetchDailyPrayerErr{Err: err}
-		}
+		prayerTimeResp := prayertime.GetTodaySchedule(todayString, m.yearlySchedules)
 
 		return fetchDailyPrayerResp{Prayers: prayerTimeResp}
 	}
@@ -115,7 +128,7 @@ func (m *model) updateUpcomingPrayerTime() bool {
 	}
 
 	for i, pt := range m.dailyPrayerTimes {
-		parsedTime, err := time.Parse("15:04", pt.Time)
+		parsedTime, err := time.Parse("15:04:05", pt.Time)
 		if err != nil {
 			log.Printf("Error parsing prayer time %s: %v ", pt.Name, err)
 			continue

@@ -27,6 +27,7 @@ var (
 				Foreground(lipgloss.Color("#FFA500")).
 				BorderForeground(lipgloss.Color("#FFA500")).
 				Width(8)
+	sunriseSectionStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFA500")).Margin(1, 0)
 )
 
 func (m model) View() string {
@@ -84,14 +85,26 @@ func (m model) View() string {
 
 func renderTodayPrayerTimes(times []prayertime.PrayerTime) string {
 	var boxes []string
-	for _, p := range times {
-		content := fmt.Sprintf("%s\n%s", p.Name, p.Time)
-		if p.IsNearest {
+	var sunrise string
+	var timeSection []string
+
+	for index, prayerTime := range times {
+		if index == 0 {
+			// skip adding sunrise to the box
+			sunrise = fmt.Sprintf("Sunrise is at: %s", prayerTime.Time)
+			timeSection = append(timeSection, sunriseSectionStyle.Render(sunrise))
+			continue
+		}
+		content := fmt.Sprintf("%s\n%s", prayerTime.Name, prayerTime.Time)
+		if prayerTime.IsNearest {
 			boxes = append(boxes, highlightBoxStyle.Render(content))
 		} else {
 			boxes = append(boxes, prayerTimeBoxStyle.Render(content))
 		}
 	}
 
-	return lipgloss.JoinHorizontal(lipgloss.Center, boxes...)
+	prayerTimeBoxes := lipgloss.JoinHorizontal(lipgloss.Center, boxes...)
+
+	timeSection = append(timeSection, prayerTimeBoxes)
+	return lipgloss.JoinVertical(lipgloss.Center, timeSection...)
 }

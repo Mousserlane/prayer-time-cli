@@ -1,79 +1,60 @@
 package prayertime
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"strings"
+	"slices"
+	"time"
+
+	"github.com/hablullah/go-prayer"
 )
 
 type PrayerTime struct {
 	Name      string
 	Time      string
-	Err       error
 	IsLoading bool
 	IsNearest bool
 }
 
-type AladhanResponse struct {
-	Code   int    `json:"code"`
-	Status string `json:"status"`
-	Data   struct {
-		Timings struct {
-			Fajr    string `json:"Fajr"`
-			Dhuhr   string `json:"Dhuhr"`
-			Asr     string `json:"Asr"`
-			Maghrib string `json:"Maghrib"`
-			Isha    string `json:"Isha"`
-			// Add other timings if needed, e.g., Sunrise, Midnight
-		} `json:"timings"`
-		// Other fields like date, Gregorian, Hijri, etc.
-	} `json:"data"`
+type MonthlyPrayerTime struct {
+	Name string
+	Time string
 }
 
-func GetTodayPrayerTime(today string, city string, country string, method int) ([]PrayerTime, error) {
-	apiURL := fmt.Sprintf("https://api.aladhan.com/v1/timingsByCity/%s?city=%s&country=%s&method=%d",
-		today,
-		strings.ReplaceAll(city, " ", "%20"),
-		strings.ReplaceAll(country, " ", "%20"),
-		method,
-	)
+func LoadSchedules(year int) []prayer.Schedule {
+	// TODO : Should load from config
+	timezone, _ := time.LoadLocation("Asia/Jakarta")
 
-	response, err := http.Get(apiURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make HTTP request to %s: %w", apiURL, err)
-	}
-	defer response.Body.Close()
+	schedulesYearly, _ := prayer.Calculate(prayer.Config{
+		// TODO : Load these from config
+		Latitude:           -6.14,
+		Longitude:          106.81,
+		Timezone:           timezone,
+		TwilightConvention: prayer.Kemenag(),
+		AsrConvention:      prayer.Shafii,
+		PreciseToSeconds:   true,
+	}, year)
 
-	if response.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(response.Body)
-		return nil, fmt.Errorf("API return non 200 status %s: %s", response.Status, string(bodyBytes))
-	}
+	return schedulesYearly
+}
 
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read API response body: %w", err)
-	}
+func GetTodaySchedule(todayISO string, schedules []prayer.Schedule) []PrayerTime {
+	todayIdx := slices.IndexFunc(schedules, func(s prayer.Schedule) bool {
+		return s.Date == todayISO
+	})
 
-	var aladhanResponse AladhanResponse
-	err = json.Unmarshal(body, &aladhanResponse)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal API response: %w (body: %s)", err, string(body))
+	// Return empty if there's no matching date
+	if todayIdx == -1 {
+		return []PrayerTime{}
 	}
 
-	// Check API's internal status code
-	if aladhanResponse.Code != 200 {
-		return nil, fmt.Errorf("Aladhan API error code %d: %s", aladhanResponse.Code, aladhanResponse.Status)
+	format := "15:04:05"
+	prayerTimeToday := []PrayerTime{
+		{Name: "Sunrise", Time: schedules[todayIdx].Sunrise.Format(format), IsNearest: false},
+		{Name: "Fajr", Time: schedules[todayIdx].Fajr.Format(format), IsNearest: false},
+		{Name: "Dhuhr", Time: schedules[todayIdx].Zuhr.Format(format), IsNearest: false},
+		{Name: "Asr", Time: schedules[todayIdx].Asr.Format(format), IsNearest: false},
+		{Name: "Maghrib", Time: schedules[todayIdx].Maghrib.Format(format), IsNearest: false},
+		{Name: "Isha", Time: schedules[todayIdx].Isha.Format(format), IsNearest: false},
 	}
 
-	dailyPrayerTimes := []PrayerTime{
-		{Name: "Fajr", Time: aladhanResponse.Data.Timings.Fajr, IsNearest: false},
-		{Name: "Dhuhr", Time: aladhanResponse.Data.Timings.Dhuhr, IsNearest: false},
-		{Name: "Asr", Time: aladhanResponse.Data.Timings.Asr, IsNearest: false},
-		{Name: "Maghrib", Time: aladhanResponse.Data.Timings.Maghrib, IsNearest: false},
-		{Name: "Isha", Time: aladhanResponse.Data.Timings.Isha, IsNearest: false},
-	}
-
-	return dailyPrayerTimes, nil
+	return prayerTimeToday
 }
