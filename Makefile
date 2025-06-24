@@ -1,6 +1,6 @@
 BINARY_NAME = prayer-time-cli
 
-VERSION := 0.7.1
+VERSION := 0.7.2
 BUILD_TIME  := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 COMMIT := $(shell git rev-parse --short HEAD)
 
