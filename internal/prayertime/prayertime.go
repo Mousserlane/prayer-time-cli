@@ -67,11 +67,10 @@ func searchDate(targetDate string, schedules []prayer.Schedule) *prayer.Schedule
 	}
 	month := parsedTime.Month()
 	year := parsedTime.Year()
-	isLeapYear := IsLeapYear(year)
 
 	// TODO : Implement leap year
 	startIndex := MonthStartIndex[month]
-	if isLeapYear {
+	if isLeapYear(year) {
 		startIndex += 1
 	}
 
@@ -93,7 +92,7 @@ func searchDate(targetDate string, schedules []prayer.Schedule) *prayer.Schedule
 	return nil
 }
 
-func IsLeapYear(year int) bool {
+func isLeapYear(year int) bool {
 	return (year%4 == 0 && year%100 != 0) || (year%400 == 0)
 }
 
@@ -104,7 +103,7 @@ func daysInMonth(month, year int) int {
 	case 4, 6, 9, 11:
 		return 30
 	case 2:
-		if IsLeapYear(year) {
+		if isLeapYear(year) {
 			return 29
 		}
 		return 28
