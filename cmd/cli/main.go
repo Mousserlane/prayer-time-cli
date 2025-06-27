@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,6 +15,9 @@ func tickCmd() tea.Cmd {
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "init" {
+		// Run config prompt
+	}
 	p := tea.NewProgram(&model{
 		currentTime: time.Now(),
 	})
