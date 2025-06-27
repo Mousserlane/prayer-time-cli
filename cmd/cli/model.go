@@ -127,7 +127,7 @@ func (m *model) updateUpcomingPrayerTime() bool {
 	}
 
 	for i, pt := range m.dailyPrayerTimes {
-		parsedTime, err := time.Parse("15:04:05", pt.Time)
+		parsedTime, err := time.Parse("15:04", pt.Time)
 		if err != nil {
 			log.Printf("Error parsing prayer time %s: %v ", pt.Name, err)
 			continue

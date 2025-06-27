@@ -36,11 +36,15 @@ func LoadSchedules(year int) []prayer.Schedule {
 	return schedulesYearly
 }
 
-func GetTodaySchedule(todayISO string, schedules []prayer.Schedule) []PrayerTime {
-	// todayIdx := slices.IndexFunc(schedules, func(s prayer.Schedule) bool {
-	// 	return s.Date == todayISO
-	// })
+func formatToHHMM(timeStr string) string {
+	parsedTime, err := time.Parse("15:04:05", timeStr)
+	if err != nil {
+		log.Printf("Error while parsing time string: %v", err)
+	}
+	return parsedTime.Format("15:04")
+}
 
+func GetTodaySchedule(todayISO string, schedules []prayer.Schedule) []PrayerTime {
 	todayPrayerTime := searchDate(todayISO, schedules)
 	// Return empty if there's no matching date
 	if todayPrayerTime == nil {
@@ -49,12 +53,12 @@ func GetTodaySchedule(todayISO string, schedules []prayer.Schedule) []PrayerTime
 
 	format := "15:04:05"
 	prayerTimeToday := []PrayerTime{
-		{Name: "Sunrise", Time: todayPrayerTime.Sunrise.Format(format), IsNearest: false},
-		{Name: "Fajr", Time: todayPrayerTime.Fajr.Format(format), IsNearest: false},
-		{Name: "Dhuhr", Time: todayPrayerTime.Zuhr.Format(format), IsNearest: false},
-		{Name: "Asr", Time: todayPrayerTime.Asr.Format(format), IsNearest: false},
-		{Name: "Maghrib", Time: todayPrayerTime.Maghrib.Format(format), IsNearest: false},
-		{Name: "Isha", Time: todayPrayerTime.Isha.Format(format), IsNearest: false},
+		{Name: "Sunrise", Time: formatToHHMM(todayPrayerTime.Sunrise.Format(format)), IsNearest: false},
+		{Name: "Fajr", Time: formatToHHMM(todayPrayerTime.Fajr.Format(format)), IsNearest: false},
+		{Name: "Dhuhr", Time: formatToHHMM(todayPrayerTime.Zuhr.Format(format)), IsNearest: false},
+		{Name: "Asr", Time: formatToHHMM(todayPrayerTime.Asr.Format(format)), IsNearest: false},
+		{Name: "Maghrib", Time: formatToHHMM(todayPrayerTime.Maghrib.Format(format)), IsNearest: false},
+		{Name: "Isha", Time: formatToHHMM(todayPrayerTime.Isha.Format(format)), IsNearest: false},
 	}
 
 	return prayerTimeToday
