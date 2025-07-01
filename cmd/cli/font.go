@@ -1,4 +1,4 @@
-package main
+package commandline
 
 var digits = map[int][]string{
 	0: {

@@ -1,0 +1,138 @@
+package config
+
+import (
+	"fmt"
+	"prayer-time-cli/internal/domain"
+	"strconv"
+
+	"github.com/charmbracelet/huh"
+	"github.com/hablullah/go-prayer"
+)
+
+type PrayerTimeConfig struct {
+	City               string                     `json:"city"`
+	Continent          string                     `json:"continent"`
+	Country            string                     `json:"country"`
+	TwilightConvention *prayer.TwilightConvention `json:"twilight_convention"`
+	AsrConvention      prayer.AsrConvention       `json:"asr_convention"`
+	Timezone           string                     `json:"string,omitempty"` // TODO : Add fallback based on City/Country based on tz database
+	Latitude           float64                    `json:"longitude,omitempty"`
+	Longitude          float64                    `json:"latitude,omitempty"`
+	PreciseToSeconds   bool                       `json:"precise_to_seconds"`
+}
+
+func (config PrayerTimeConfig) IsConfigComplete() bool {
+	return config.Continent != "" && config.Country != ""
+}
+
+func GetConfigFile() (string, error) {
+	// TODO Get Config file here
+	return "", nil
+}
+
+func marshallFloat64(input float64) string {
+	return strconv.FormatFloat(float64(input), 'f', 6, 64)
+}
+
+func unmarshallFloat64(input string) (float64, error) {
+	return strconv.ParseFloat(input, 64)
+}
+
+func PromptForConfig() (PrayerTimeConfig, error) {
+	var conf PrayerTimeConfig
+	var tz_continents []huh.Option[string]
+
+	continents := make([]string, 0, len(domain.IanaTimezonesByRegion))
+	for continent := range domain.IanaTimezonesByRegion {
+		continents = append(continents, continent)
+	}
+
+	for _, tz_continent := range continents {
+		tz_continents = append(tz_continents, huh.NewOption(tz_continent, tz_continent))
+	}
+
+	twilightConventions := []huh.Option[*prayer.TwilightConvention]{
+		huh.NewOption("Astronomical Twilight", prayer.AstronomicalTwilight()),
+		huh.NewOption("Muslim World League (MWL)", prayer.MWL()),
+		huh.NewOption("Islamic Society of North America (ISNA)", prayer.ISNA()),
+		huh.NewOption("Umm al-Qura", prayer.UmmAlQura()),
+		huh.NewOption("Gulf", prayer.Gulf()),
+		huh.NewOption("Algerian Ministry of Religious Affairs", prayer.Algerian()),
+		huh.NewOption("University of Islamic Sciences (Karachi)", prayer.Karachi()),
+		huh.NewOption("Diyanet İşleri Başkanlığı (Turkey)", prayer.Diyanet()),
+		huh.NewOption("Egyptian General Authority of Survey", prayer.Egypt()),
+		huh.NewOption("Egypt(BIS)", prayer.EgyptBis()),
+		huh.NewOption("Kementrian Agama Republic Indonesia (Kemenag RI)", prayer.Kemenag()),
+		huh.NewOption("Majlis Ugama Islam Singapura (MUIS)", prayer.MUIS()),
+		huh.NewOption("Jabatan Kemajuan Islam Malaysia (JAKIM)", prayer.JAKIM()),
+		huh.NewOption("Union Des Organisations Islamiques De France (UOIF)", prayer.UOIF()),
+		huh.NewOption("France 15", prayer.France15()),
+		huh.NewOption("France 18", prayer.France18()),
+		huh.NewOption("Tunisian Ministry of Religious Affairs (Tunisia)", prayer.Tunisia()),
+		huh.NewOption("Institute of Geophysics at University of Tehran.", prayer.Tehran()),
+		huh.NewOption("Jafari", prayer.Jafari()),
+	}
+
+	asrConvention := []huh.Option[prayer.AsrConvention]{
+		huh.NewOption("Shafii", prayer.Shafii),
+		huh.NewOption("Hanafi", prayer.Hanafi),
+	}
+
+	form := huh.NewForm(huh.NewGroup(
+		huh.NewSelect[string]().
+			Title("Please Select a Continent").
+			Options(tz_continents...).
+			Value(&conf.Continent),
+
+		// huh.NewInput().
+		// 	Title("Please Input your Country").
+		// 	Prompt(">>").
+		// 	Value(&conf.Country),
+		//
+		// huh.NewInput().
+		// 	Title("Please Input Your City").
+		// 	Prompt(">>").
+		// 	Value(&conf.City),
+
+		huh.NewSelect[*prayer.TwilightConvention]().
+			Title("Select A Twlilight Convention (To determine Fajr & Isha Angle)").
+			Options(twilightConventions...).
+			Value(&conf.TwilightConvention),
+
+		huh.NewSelect[prayer.AsrConvention]().
+			Title("Select Asr Convention").
+			Options(asrConvention...).
+			Value(&conf.AsrConvention),
+
+		huh.NewSelect[string]().
+			Title("Select Timezone").
+			OptionsFunc(func() []huh.Option[string] {
+				var options []huh.Option[string]
+
+				timezones, ok := domain.IanaTimezonesByRegion[conf.Continent]
+
+				if !ok {
+					timezones = domain.IanaTimezonesByRegion["General / Other"]
+				}
+
+				for _, tz := range timezones {
+					options = append(options, huh.NewOption(tz, tz))
+				}
+
+				return options
+			}, &conf.Continent).
+			Value(&conf.Timezone),
+	))
+
+	if err := form.Run(); err != nil {
+		return conf, fmt.Errorf("Form exited with error: %w", err)
+	}
+
+	return conf, nil
+}
+
+// func SaveConfig(path string, conf PrayerTimeConfig) error {
+// 	data, err := json.MarshalIndent(conf, "", " ")
+// 	dir := filepath.Dir(path)
+//
+// }

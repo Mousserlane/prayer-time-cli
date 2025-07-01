@@ -1,7 +1,8 @@
-package main
+package commandline
 
 import (
 	"log"
+	"prayer-time-cli/internal/config"
 	"time"
 
 	prayertime "prayer-time-cli/internal/prayertime"
@@ -37,6 +38,7 @@ type model struct {
 	Error             error
 	width             int
 	height            int
+	appConfig         config.PrayerTimeConfig
 }
 
 type tickMsg time.Time
@@ -93,7 +95,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *model) loadSchedules() tea.Cmd {
 	return func() tea.Msg {
-		schedules := prayertime.LoadSchedules(m.currentTime.Year())
+		schedules := prayertime.LoadSchedules(m.currentTime.Year(), m.appConfig)
 		return schedulesLoadedResp{schedules}
 	}
 }

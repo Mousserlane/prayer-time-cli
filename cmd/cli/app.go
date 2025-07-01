@@ -1,8 +1,8 @@
-package main
+package commandline
 
 import (
 	"fmt"
-	"os"
+	"prayer-time-cli/internal/config"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -14,12 +14,10 @@ func tickCmd() tea.Cmd {
 	})
 }
 
-func main() {
-	if len(os.Args) > 1 && os.Args[1] == "init" {
-		// Run config prompt
-	}
+func RunApp(appConfig config.PrayerTimeConfig) {
 	p := tea.NewProgram(&model{
 		currentTime: time.Now(),
+		appConfig:   appConfig,
 	})
 
 	if _, err := p.Run(); err != nil {
