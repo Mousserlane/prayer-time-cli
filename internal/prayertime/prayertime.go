@@ -21,13 +21,11 @@ type MonthlyPrayerTime struct {
 }
 
 func LoadSchedules(year int, config config.PrayerTimeConfig) []prayer.Schedule {
-	// TODO : Should load from config
 	timezone, _ := time.LoadLocation(config.Timezone)
 
 	schedulesYearly, _ := prayer.Calculate(prayer.Config{
-		// TODO : Load these from config
-		Latitude:           -6.14,
-		Longitude:          106.81,
+		Latitude:           config.Latitude,
+		Longitude:          config.Longitude,
 		Timezone:           timezone,
 		TwilightConvention: config.TwilightConvention,
 		AsrConvention:      config.AsrConvention,

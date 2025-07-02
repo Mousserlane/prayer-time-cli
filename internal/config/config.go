@@ -49,6 +49,8 @@ func unmarshallFloat64(input string) (float64, error) {
 func PromptForConfig() (PrayerTimeConfig, error) {
 	var conf PrayerTimeConfig
 	var tz_continents []huh.Option[string]
+	var latitudeString string
+	var longitudeString string
 
 	continents := make([]string, 0, len(domain.IanaTimezonesByRegion))
 	for continent := range domain.IanaTimezonesByRegion {
@@ -94,8 +96,18 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 
 		huh.NewInput().
 			Title("Please Input Your City").
-			Prompt(">>").
+			Prompt(">> ").
 			Value(&conf.City),
+
+		huh.NewInput().
+			Title("Enter Latitude").
+			Prompt(">> ").
+			Value(&latitudeString),
+
+		huh.NewInput().
+			Title("Enter Longitude").
+			Prompt(">> ").
+			Value(&longitudeString),
 
 		huh.NewSelect[*prayer.TwilightConvention]().
 			Title("Select A Twlilight Convention (To determine Fajr & Isha Angle)").
@@ -129,6 +141,18 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 
 	if err := form.Run(); err != nil {
 		return conf, fmt.Errorf("Form exited with error: %w", err)
+	}
+
+	var unMarshalError error
+	conf.Latitude, unMarshalError = unmarshallFloat64(latitudeString)
+
+	if unMarshalError != nil {
+		fmt.Errorf("Unable to parse latitude: %w", unMarshalError)
+	}
+
+	conf.Longitude, unMarshalError = unmarshallFloat64(longitudeString)
+	if unMarshalError != nil {
+		fmt.Errorf("Unable to parse longitude: %w", unMarshalError)
 	}
 
 	return conf, nil
