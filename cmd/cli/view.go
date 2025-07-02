@@ -1,4 +1,4 @@
-package main
+package commandline
 
 import (
 	"fmt"
@@ -10,29 +10,34 @@ import (
 )
 
 var (
+	GREEN  = "#BDFE58"
+	ORANGE = "#FFA500"
+)
+var (
 	digitColor                    = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58"))
 	dateStyle                     = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58")).Bold(true).Padding(0, 2)
-	dateContainerStyle            = lipgloss.NewStyle().Align(lipgloss.Center)
+	dateContainerStyle            = lipgloss.NewStyle().Align(lipgloss.Center).MarginBottom(1)
 	clockContainerStyle           = lipgloss.NewStyle().Align(lipgloss.Center).Margin(2, 0)
 	todayPrayerTimeContainerStyle = lipgloss.NewStyle().Align(lipgloss.Center)
 	prayerTimeBoxStyle            = lipgloss.NewStyle().
-					Foreground(lipgloss.Color("#BDFE58")).
+					Foreground(lipgloss.Color(GREEN)).
 					Bold(true).
 					Padding(0, 1).
 					Border(lipgloss.RoundedBorder()).
-					BorderForeground(lipgloss.Color("#BDFE58")).
+					BorderForeground(lipgloss.Color(GREEN)).
 					Align(lipgloss.Center)
 	highlightBoxStyle = lipgloss.NewStyle().
 				Inherit(prayerTimeBoxStyle).
-				Foreground(lipgloss.Color("#FFA500")).
-				BorderForeground(lipgloss.Color("#FFA500")).
+				Foreground(lipgloss.Color(ORANGE)).
+				BorderForeground(lipgloss.Color(ORANGE)).
 				Width(8)
-	sunriseSectionStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#FFA500")).Margin(1, 0)
+	citySectionStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(GREEN)).MarginBottom(1).Align(lipgloss.Center)
+	sunriseSectionStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ORANGE)).MarginBottom(1)
 )
 
 func (m model) View() string {
 	if m.isQuitting {
-		return "See you around!"
+		return "See you later!"
 	}
 
 	hour := m.currentTime.Hour()
@@ -74,10 +79,18 @@ func (m model) View() string {
 	hijriDate := prayertime.DateNowToHijri(m.currentTime)
 	combinedDate := fmt.Sprintf("%s / %s", m.currentTime.UTC().Format("2 January 2006"), hijriDate)
 
+	cityString := fmt.Sprintf("Prayer time for: %s", lipgloss.
+		NewStyle().
+		Foreground(lipgloss.Color(ORANGE)).
+		Render(m.city))
+
 	var sections []string
 
 	sections = append(sections, clockContainerStyle.Width(m.width).Render(renderedClock))
 	sections = append(sections, dateContainerStyle.Width(m.width).Render(dateStyle.Render(combinedDate)))
+	if m.city != "" {
+		sections = append(sections, citySectionStyle.Width(m.width).Render(cityString))
+	}
 	sections = append(sections, todayPrayerTimeContainerStyle.Render(renderedPrayerTimes))
 
 	return lipgloss.JoinVertical(lipgloss.Center, sections...)

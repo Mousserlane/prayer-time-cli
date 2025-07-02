@@ -2,6 +2,7 @@ package prayertime
 
 import (
 	"log"
+	"prayer-time-cli/internal/config"
 	"time"
 
 	"github.com/hablullah/go-prayer"
@@ -19,17 +20,17 @@ type MonthlyPrayerTime struct {
 	Time string
 }
 
-func LoadSchedules(year int) []prayer.Schedule {
+func LoadSchedules(year int, config config.PrayerTimeConfig) []prayer.Schedule {
 	// TODO : Should load from config
-	timezone, _ := time.LoadLocation("Asia/Jakarta")
+	timezone, _ := time.LoadLocation(config.Timezone)
 
 	schedulesYearly, _ := prayer.Calculate(prayer.Config{
 		// TODO : Load these from config
 		Latitude:           -6.14,
 		Longitude:          106.81,
 		Timezone:           timezone,
-		TwilightConvention: prayer.Kemenag(),
-		AsrConvention:      prayer.Shafii,
+		TwilightConvention: config.TwilightConvention,
+		AsrConvention:      config.AsrConvention,
 		PreciseToSeconds:   true,
 	}, year)
 

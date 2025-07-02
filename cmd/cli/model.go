@@ -1,7 +1,8 @@
-package main
+package commandline
 
 import (
 	"log"
+	"prayer-time-cli/internal/config"
 	"time"
 
 	prayertime "prayer-time-cli/internal/prayertime"
@@ -35,8 +36,10 @@ type model struct {
 	yearlySchedules   []prayer.Schedule
 	isLoadingPrayer   bool
 	Error             error
+	city              string
 	width             int
 	height            int
+	appConfig         config.PrayerTimeConfig
 }
 
 type tickMsg time.Time
@@ -79,6 +82,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case fetchDailyPrayerResp:
 		m.isLoadingPrayer = false
 		m.dailyPrayerTimes = msg.Prayers
+		m.city = m.appConfig.City
 		m.updateUpcomingPrayerTime()
 		return m, nil
 
@@ -93,7 +97,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *model) loadSchedules() tea.Cmd {
 	return func() tea.Msg {
-		schedules := prayertime.LoadSchedules(m.currentTime.Year())
+		schedules := prayertime.LoadSchedules(m.currentTime.Year(), m.appConfig)
 		return schedulesLoadedResp{schedules}
 	}
 }
