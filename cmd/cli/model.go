@@ -36,6 +36,7 @@ type model struct {
 	yearlySchedules   []prayer.Schedule
 	isLoadingPrayer   bool
 	Error             error
+	city              string
 	width             int
 	height            int
 	appConfig         config.PrayerTimeConfig
@@ -81,6 +82,7 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case fetchDailyPrayerResp:
 		m.isLoadingPrayer = false
 		m.dailyPrayerTimes = msg.Prayers
+		m.city = m.appConfig.City
 		m.updateUpcomingPrayerTime()
 		return m, nil
 
