@@ -1,10 +1,15 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"prayer-time-cli/internal/domain"
 	"strconv"
 
+	"github.com/adrg/xdg"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
 	"github.com/hablullah/go-prayer"
 )
@@ -12,22 +17,25 @@ import (
 type PrayerTimeConfig struct {
 	City               string                     `json:"city"`
 	Continent          string                     `json:"continent"`
-	Country            string                     `json:"country"`
 	TwilightConvention *prayer.TwilightConvention `json:"twilight_convention"`
-	AsrConvention      prayer.AsrConvention       `json:"asr_convention"`
-	Timezone           string                     `json:"string,omitempty"` // TODO : Add fallback based on City/Country based on tz database
+	AsrConvention      prayer.AsrConvention       `json:"asr_convention,omitempty"`
+	Timezone           string                     `json:"string"` // TODO : Add fallback based on City/Country based on tz database
 	Latitude           float64                    `json:"longitude,omitempty"`
 	Longitude          float64                    `json:"latitude,omitempty"`
-	PreciseToSeconds   bool                       `json:"precise_to_seconds"`
+	PreciseToSeconds   bool                       `json:"precise_to_seconds,omitempty"`
 }
 
 func (config PrayerTimeConfig) IsConfigComplete() bool {
-	return config.Continent != "" && config.Country != ""
+	return config.Timezone != "" && config.TwilightConvention != nil && config.Continent != ""
 }
 
-func GetConfigFile() (string, error) {
+func GetConfigPath() string {
 	// TODO Get Config file here
-	return "", nil
+	configHome, err := xdg.ConfigFile(filepath.Join("prayer-time-cli", "config.json"))
+	if err != nil {
+		panic("Unable to determine XDG config")
+	}
+	return configHome
 }
 
 func marshallFloat64(input float64) string {
@@ -84,15 +92,10 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 			Options(tz_continents...).
 			Value(&conf.Continent),
 
-		// huh.NewInput().
-		// 	Title("Please Input your Country").
-		// 	Prompt(">>").
-		// 	Value(&conf.Country),
-		//
-		// huh.NewInput().
-		// 	Title("Please Input Your City").
-		// 	Prompt(">>").
-		// 	Value(&conf.City),
+		huh.NewInput().
+			Title("Please Input Your City").
+			Prompt(">>").
+			Value(&conf.City),
 
 		huh.NewSelect[*prayer.TwilightConvention]().
 			Title("Select A Twlilight Convention (To determine Fajr & Isha Angle)").
@@ -122,7 +125,7 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 				return options
 			}, &conf.Continent).
 			Value(&conf.Timezone),
-	))
+	)).WithProgramOptions(tea.WithAltScreen())
 
 	if err := form.Run(); err != nil {
 		return conf, fmt.Errorf("Form exited with error: %w", err)
@@ -131,8 +134,31 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 	return conf, nil
 }
 
-// func SaveConfig(path string, conf PrayerTimeConfig) error {
-// 	data, err := json.MarshalIndent(conf, "", " ")
-// 	dir := filepath.Dir(path)
-//
-// }
+func SaveConfig(path string, conf PrayerTimeConfig) error {
+	data, err := json.MarshalIndent(conf, "", " ")
+	if err != nil {
+		fmt.Errorf("Failed to marshal config file: %w", err)
+	}
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("Failed to create config directory '%s': '%w'", dir, err)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		return fmt.Errorf("Failed to write config file '%s':'%w'", path, err)
+	}
+
+	return nil
+}
+
+func LoadConfig(path string) (PrayerTimeConfig, error) {
+	var conf PrayerTimeConfig
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return conf, fmt.Errorf("Failed to read config file '%s' : '%w'", path, err)
+	}
+
+	if err := json.Unmarshal(data, &conf); err != nil {
+		return conf, fmt.Errorf("Failed to unmarshal config from '%s' : '%w'", path, err)
+	}
+	return conf, nil
+}
