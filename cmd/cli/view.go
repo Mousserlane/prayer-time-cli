@@ -16,7 +16,7 @@ var (
 var (
 	digitColor                    = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58"))
 	dateStyle                     = lipgloss.NewStyle().Foreground(lipgloss.Color("#BDFE58")).Bold(true).Padding(0, 2)
-	dateContainerStyle            = lipgloss.NewStyle().Align(lipgloss.Center)
+	dateContainerStyle            = lipgloss.NewStyle().Align(lipgloss.Center).MarginBottom(1)
 	clockContainerStyle           = lipgloss.NewStyle().Align(lipgloss.Center).Margin(2, 0)
 	todayPrayerTimeContainerStyle = lipgloss.NewStyle().Align(lipgloss.Center)
 	prayerTimeBoxStyle            = lipgloss.NewStyle().
@@ -31,7 +31,7 @@ var (
 				Foreground(lipgloss.Color(ORANGE)).
 				BorderForeground(lipgloss.Color(ORANGE)).
 				Width(8)
-	citySectionStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(GREEN)).Margin(1, 0).Align(lipgloss.Center)
+	citySectionStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(GREEN)).MarginBottom(1).Align(lipgloss.Center)
 	sunriseSectionStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ORANGE)).MarginBottom(1)
 )
 
@@ -88,7 +88,9 @@ func (m model) View() string {
 
 	sections = append(sections, clockContainerStyle.Width(m.width).Render(renderedClock))
 	sections = append(sections, dateContainerStyle.Width(m.width).Render(dateStyle.Render(combinedDate)))
-	sections = append(sections, citySectionStyle.Width(m.width).Render(cityString))
+	if m.city != "" {
+		sections = append(sections, citySectionStyle.Width(m.width).Render(cityString))
+	}
 	sections = append(sections, todayPrayerTimeContainerStyle.Render(renderedPrayerTimes))
 
 	return lipgloss.JoinVertical(lipgloss.Center, sections...)
