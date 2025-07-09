@@ -6,7 +6,9 @@ import (
 	"os"
 	"path/filepath"
 	"prayer-time-cli/internal/domain"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/adrg/xdg"
 	tea "github.com/charmbracelet/bubbletea"
@@ -51,6 +53,7 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 	var tz_continents []huh.Option[string]
 	var latitudeString string
 	var longitudeString string
+	var cityString string
 
 	continents := make([]string, 0, len(domain.IanaTimezonesByRegion))
 	for continent := range domain.IanaTimezonesByRegion {
@@ -88,7 +91,7 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 		huh.NewOption("Hanafi", prayer.Hanafi),
 	}
 
-	form := huh.NewForm(huh.NewGroup(
+	huh.NewForm(huh.NewGroup(
 		huh.NewSelect[string]().
 			Title("Please Select a Continent").
 			Options(tz_continents...).
@@ -98,7 +101,11 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 			Title("Please Input Your City").
 			Prompt(">> ").
 			Value(&conf.City),
+	)).
+		WithProgramOptions(tea.WithAltScreen()).
+		Run()
 
+	huh.NewForm(huh.NewGroup(
 		huh.NewInput().
 			Title("Enter Latitude").
 			Prompt(">> ").
@@ -108,6 +115,11 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 			Title("Enter Longitude").
 			Prompt(">> ").
 			Value(&longitudeString),
+	)).
+		WithProgramOptions(tea.WithAltScreen()).
+		Run()
+
+	form := huh.NewForm(huh.NewGroup(
 
 		huh.NewSelect[*prayer.TwilightConvention]().
 			Title("Select A Twlilight Convention (To determine Fajr & Isha Angle)").
@@ -126,12 +138,26 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 
 				timezones, ok := domain.IanaTimezonesByRegion[conf.Continent]
 
+				// cityIndex := strings.IndexFunc(options, func(option huh.Option[string]) bool {
+				// 	city := strings.Split(option.Key, "/")
+				// 	return city[len(city)-1] == conf.City
+				// })
+
 				if !ok {
 					timezones = domain.IanaTimezonesByRegion["General / Other"]
 				}
 
 				for _, tz := range timezones {
 					options = append(options, huh.NewOption(tz, tz))
+				}
+
+				cityIndex := slices.IndexFunc(options, func(option huh.Option[string]) bool {
+					cityPart := strings.Split(option.Key, "/")
+					return cityPart[len(cityPart)-1] == conf.City
+				})
+
+				if cityIndex != -1 {
+					return []huh.Option[string]{options[cityIndex]}
 				}
 
 				return options
@@ -154,6 +180,8 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 	if unMarshalError != nil {
 		fmt.Errorf("Unable to parse longitude: %w", unMarshalError)
 	}
+
+	conf.City = cityString
 
 	return conf, nil
 }
