@@ -19,18 +19,22 @@ var (
 	dateContainerStyle            = lipgloss.NewStyle().Align(lipgloss.Center).MarginBottom(1)
 	clockContainerStyle           = lipgloss.NewStyle().Align(lipgloss.Center).Margin(2, 0)
 	todayPrayerTimeContainerStyle = lipgloss.NewStyle().Align(lipgloss.Center)
-	prayerTimeBoxStyle            = lipgloss.NewStyle().
-					Foreground(lipgloss.Color(GREEN)).
-					Bold(true).
-					Padding(0, 1).
-					Border(lipgloss.RoundedBorder()).
-					BorderForeground(lipgloss.Color(GREEN)).
-					Align(lipgloss.Center)
+
+	prayerTimeBoxStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color(GREEN)).
+				Bold(true).
+				Padding(0, 1).
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color(GREEN)).
+				Align(lipgloss.Center)
+
 	highlightBoxStyle = lipgloss.NewStyle().
 				Inherit(prayerTimeBoxStyle).
 				Foreground(lipgloss.Color(ORANGE)).
 				BorderForeground(lipgloss.Color(ORANGE)).
-				Width(8)
+				Padding(0, 1).
+				Align(lipgloss.Center)
+
 	citySectionStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color(GREEN)).MarginBottom(1).Align(lipgloss.Center)
 	sunriseSectionStyle = lipgloss.NewStyle().Foreground(lipgloss.Color(ORANGE)).MarginBottom(1)
 )
