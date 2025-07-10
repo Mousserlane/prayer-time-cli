@@ -1,12 +1,12 @@
 BINARY_NAME = prayer-time-cli
 
-VERSION := 0.8.3
+VERSION := 0.9.0
 BUILD_TIME  := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 COMMIT := $(shell git rev-parse --short HEAD)
 
 MAIN_PACKAGE = ./cmd
 
-GO_BUILD_FLAGS = -ldflags "main.Version=${VERSION} main.Commit=${COMMIT} main.BuildTime=${BUILD_TIME}" 
+GO_BUILD_FLAGS = -ldflags "main.Version=${VERSION} main.Commit=${COMMIT} main.BuildTime=${BUILD_TIME} -s -w"
 INSTALL_DIR = /usr/local/bin
 
 debug:

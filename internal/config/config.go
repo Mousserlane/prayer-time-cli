@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"prayer-time-cli/internal/domain"
+	"prayer-time-cli/internal/geo"
 	"slices"
 	"strconv"
 	"strings"
@@ -38,10 +39,6 @@ func GetConfigPath() string {
 		panic("Unable to determine XDG config")
 	}
 	return configHome
-}
-
-func marshallFloat64(input float64) string {
-	return strconv.FormatFloat(float64(input), 'f', 6, 64)
 }
 
 func unmarshallFloat64(input string) (float64, error) {
@@ -107,12 +104,12 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 
 	huh.NewForm(huh.NewGroup(
 		huh.NewInput().
-			Title("Enter Latitude").
+			Title("Enter Latitude (Omit to use estimated value))").
 			Prompt(">> ").
 			Value(&latitudeString),
 
 		huh.NewInput().
-			Title("Enter Longitude").
+			Title("Enter Longitude (Omit to use estimated value)").
 			Prompt(">> ").
 			Value(&longitudeString),
 	)).
@@ -137,11 +134,6 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 				var options []huh.Option[string]
 
 				timezones, ok := domain.IanaTimezonesByRegion[conf.Continent]
-
-				// cityIndex := strings.IndexFunc(options, func(option huh.Option[string]) bool {
-				// 	city := strings.Split(option.Key, "/")
-				// 	return city[len(city)-1] == conf.City
-				// })
 
 				if !ok {
 					timezones = domain.IanaTimezonesByRegion["General / Other"]
@@ -169,16 +161,26 @@ func PromptForConfig() (PrayerTimeConfig, error) {
 		return conf, fmt.Errorf("Form exited with error: %w", err)
 	}
 
-	var unMarshalError error
-	conf.Latitude, unMarshalError = unmarshallFloat64(latitudeString)
+	if latitudeString != "" && longitudeString != "" {
+		var unMarshalError error
+		conf.Latitude, unMarshalError = unmarshallFloat64(latitudeString)
+		if unMarshalError != nil {
+			fmt.Errorf("Unable to parse latitude: %w", unMarshalError)
+		}
 
-	if unMarshalError != nil {
-		fmt.Errorf("Unable to parse latitude: %w", unMarshalError)
-	}
+		conf.Longitude, unMarshalError = unmarshallFloat64(longitudeString)
+		if unMarshalError != nil {
+			fmt.Errorf("Unable to parse longitude: %w", unMarshalError)
+		}
+	} else {
+		centroid, ok := tzcentroids.TzCentroids[conf.Timezone]
 
-	conf.Longitude, unMarshalError = unmarshallFloat64(longitudeString)
-	if unMarshalError != nil {
-		fmt.Errorf("Unable to parse longitude: %w", unMarshalError)
+		if !ok {
+			fmt.Errorf("No centroid found for the provided timezone %s", conf.Timezone)
+		}
+
+		conf.Latitude = centroid[0]
+		conf.Longitude = centroid[1]
 	}
 
 	conf.City = cityString
