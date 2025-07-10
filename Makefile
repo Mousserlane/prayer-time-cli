@@ -6,7 +6,7 @@ COMMIT := $(shell git rev-parse --short HEAD)
 
 MAIN_PACKAGE = ./cmd
 
-GO_BUILD_FLAGS = -ldflags "main.Version=${VERSION} main.Commit=${COMMIT} main.BuildTime=${BUILD_TIME}" 
+GO_BUILD_FLAGS = -ldflags "main.Version=${VERSION} main.Commit=${COMMIT} main.BuildTime=${BUILD_TIME} -s -w"
 INSTALL_DIR = /usr/local/bin
 
 debug:
