@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"slices"
 	"sort"
 	"strings"
 
@@ -24,13 +25,7 @@ func findIn(source []string, key string) bool {
 		return false
 	}
 
-	for _, val := range source {
-		if key == val {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(source, key)
 }
 
 func init() {
@@ -44,9 +39,6 @@ func init() {
 		if found && findIn(Continents, region) {
 			IanaTimezonesByRegion[region] = append(IanaTimezonesByRegion[region], tz)
 		}
-		// if !found && findIn(SpecialRegions, region) {
-		// 	panic("Invalid Timezone format. It should follow the IANA TZ convention of Region/City")
-		// }
 	}
 
 	for region, sortedTzs := range IanaTimezonesByRegion {
